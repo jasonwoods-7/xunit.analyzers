@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
 using Verify = CSharpVerifier<Xunit.Analyzers.TheoryDataRowArgumentsShouldBeSerializable>;
@@ -219,5 +220,25 @@ public class PossiblySerializableUnsealedClass {{ }}";
 		};
 
 		await Verify.VerifyAnalyzerV3(LanguageVersion.CSharp8, source, expected);
+	}
+
+	[Fact]
+	public async Task ParamArrayArguments_NotUsingTheoryData_DoesNotTrigger()
+	{
+		var source = @"
+#nullable enable
+
+public class Foo {
+	public Foo(params object[] args) { }
+}
+
+public class TestClass {
+	public void TestMethod() {
+		var foo = new Foo(new object());
+	}
+}
+";
+
+		await Verify.VerifyAnalyzerV3(LanguageVersion.CSharp8, source);
 	}
 }
